@@ -1,0 +1,31 @@
+# services:
+#   app:
+#     container_name: go-first-api-container
+#     # tty: true
+#     image: brando/go/first-api
+#     ports:
+#       - 3000:3000
+#     restart: on-failure
+#     volumes:
+#       - ./:/app
+services:
+   go-echo-dev:
+    container_name: go-echo-dev
+    image: cosmtrek/air
+    environment:
+      # - GOPRIVATE=*
+      - ENV CGO_ENABLED=0
+
+    # working_dir value has to be the same of mapped volume
+    working_dir: /home/go-echo
+    ports:
+      - 5100:5100
+      # - 5432:5432
+    # environment:
+    #   - ENV_A=${ENV_A}
+    #   - ENV_B=${ENV_B}
+    #   - ENV_C=${ENV_C}
+    volumes:
+      - ./:/home/go-echo
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
