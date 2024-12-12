@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"go-echo/internal/user/dto"
 	"go-echo/internal/user/model"
 
 	"gorm.io/gorm"
@@ -30,13 +31,13 @@ func (r *UserRepository) FindById(id uint) (*model.User, error) {
 	return &user, err
 }
 
-func (r* UserRepository) FindAll() (*[]model.User, error) {
+func (r *UserRepository) Find(filter *dto.GetUserFilter) (*[]model.User, error) {
 	var users []model.User
-	err := r.db.Find(&users).Error
+	err := r.db.Find(&users, filter).Error
 	return &users, err
 }
 
-func (r* UserRepository) Delete() () {
+func (r *UserRepository) Delete() {
 	// r.db.Raw("DELETE from users")
 	// return &users, err
 }

@@ -61,13 +61,11 @@ func InitInternal() {
 		output := make(map[string][]echo.Route)
 		output["Routes"] = make([]echo.Route, 0)
 		for i := 0; i < len(routes); i++ {
-			fmt.Println("start" + string(i))
 			route := *routes[i]
 			output["Routes"] = append(output["Routes"], route)
 		}
 		err := c.Render(http.StatusOK, "home", output)
 
-		fmt.Println(err)
 		return err
 	})
 

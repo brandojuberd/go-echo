@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"go-echo/internal/user/dto"
 	"go-echo/internal/user/model"
 	"go-echo/internal/user/repository"
 )
@@ -22,12 +23,11 @@ func (s *UserService) GetUserByEmail(email string) (*model.User, error) {
 	return s.repo.FindByEmail(email)
 }
 
-func (s *UserService) FindAll() (*[]model.User, error) {
-	return s.repo.FindAll()
+func (s *UserService) Find(filter *dto.GetUserFilter) (*[]model.User, error) {
+	return s.repo.Find(filter)
 }
 
-func (s *UserService) DeleteAll() {
-	
+func (s *UserService) DeleteAll(filter *dto.GetUserFilter) {
 }
 
 func (s *UserService) Seed() (*[]model.User, error) {

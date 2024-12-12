@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"go-echo/internal/user/dto"
 	"go-echo/internal/user/model"
 	"go-echo/internal/user/service"
 	"net/http"
@@ -40,16 +41,30 @@ func (controller *UserController) CreateUser(e echo.Context) {
 }
 
 func (controller *UserController) FindAll(c echo.Context) error {
-	users, err := controller.userService.FindAll()
+	filter := new(dto.GetUserFilter)
+	err := c.Bind(filter)
+
 	if err != nil {
 		return err
 	}
-	output := map[string]*[]model.User{"Users": users}
+
+	users, err := controller.userService.Find(filter)
+	if err != nil {
+		return err
+	}
+	output := map[string]*[]model.User{"users": users}
 	return c.JSON(http.StatusOK, output)
 }
 
 func (controller *UserController) FindAllGUI(c echo.Context) error {
-	users, err := controller.userService.FindAll()
+	filter := new(dto.GetUserFilter)
+	err := c.Bind(filter)
+
+	if err != nil {
+		return err
+	}
+
+	users, err := controller.userService.Find(filter)
 	if err != nil {
 		return err
 	}
