@@ -10,10 +10,17 @@ import (
 	"gorm.io/gorm"
 )
 
+type postgresDatabase struct {
+	Db *gorm.DB
+}
 
-func InitDatabaseConnection() *gorm.DB {
+var (
+	dbInstance *postgresDatabase
+)
+
+func InitDatabaseConnection() Database {
 	err := godotenv.Load("development.env")
-	if(err != nil){
+	if err != nil {
 		fmt.Println(err)
 	}
 	user := os.Getenv("DB_USER")
@@ -23,7 +30,6 @@ func InitDatabaseConnection() *gorm.DB {
 	dbName := os.Getenv("DB_NAME")
 	fmt.Println(host, port, dbName, user, password)
 
-
 	dsn := url.URL{
 		User:     url.UserPassword(user, password),
 		Scheme:   "postgres",
@@ -32,15 +38,18 @@ func InitDatabaseConnection() *gorm.DB {
 		RawQuery: (&url.Values{"sslmode": []string{"disable"}}).Encode(),
 	}
 
-
 	db, err := gorm.Open(postgres.Open(dsn.String()), &gorm.Config{})
 
-
 	fmt.Println("Success connect/create to db: " + dbName)
-
 
 	if err != nil {
 		panic("failed to connect database")
 	}
-	return db
+	dbInstance = &postgresDatabase{Db: db}
+
+	return dbInstance
+}
+
+func (*postgresDatabase) GetDb() *gorm.DB {
+	return dbInstance.Db
 }

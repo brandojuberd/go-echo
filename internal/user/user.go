@@ -21,5 +21,4 @@ func UserInit(db *gorm.DB, api *echo.Group, gui *echo.Group) {
 
 	guiUserRoute := gui.Group("/users")
 	guiUserRoute.GET("", userHandler.FindGUI)
-
 }
