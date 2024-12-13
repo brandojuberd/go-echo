@@ -27,7 +27,8 @@ func (s *UserService) Find(filter *dto.GetUserFilter) (*[]model.User, error) {
 	return s.repo.Find(filter)
 }
 
-func (s *UserService) DeleteAll(filter *dto.GetUserFilter) {
+func (s *UserService) Delete(filter *dto.GetUserFilter) error {
+	return s.repo.Delete(filter)
 }
 
 func (s *UserService) Seed() (*[]model.User, error) {

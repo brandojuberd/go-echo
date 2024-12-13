@@ -40,7 +40,7 @@ func (controller *UserController) CreateUser(e echo.Context) {
 	e.JSON(http.StatusCreated, response)
 }
 
-func (controller *UserController) FindAll(c echo.Context) error {
+func (controller *UserController) Find(c echo.Context) error {
 	filter := new(dto.GetUserFilter)
 	err := c.Bind(filter)
 
@@ -56,7 +56,7 @@ func (controller *UserController) FindAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, output)
 }
 
-func (controller *UserController) FindAllGUI(c echo.Context) error {
+func (controller *UserController) FindGUI(c echo.Context) error {
 	filter := new(dto.GetUserFilter)
 	err := c.Bind(filter)
 
@@ -74,6 +74,21 @@ func (controller *UserController) FindAllGUI(c echo.Context) error {
 	err = c.Render(http.StatusOK, "users", output)
 	fmt.Println(err)
 	return err
+}
+
+func (controller *UserController) Delete(c echo.Context) error {
+	filter := new(dto.GetUserFilter)
+	err := c.Bind(filter)
+
+	if err != nil {
+		return err
+	}
+
+	err = controller.userService.Delete(filter)
+	if err != nil {
+		return err
+	}
+	return c.String(http.StatusOK, "successfully ")
 }
 
 func (controller *UserController) Seed(c echo.Context) error {

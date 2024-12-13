@@ -37,7 +37,6 @@ func (r *UserRepository) Find(filter *dto.GetUserFilter) (*[]model.User, error) 
 	return &users, err
 }
 
-func (r *UserRepository) Delete() {
-	// r.db.Raw("DELETE from users")
-	// return &users, err
+func (r *UserRepository) Delete(filter *dto.GetUserFilter) error {
+	return r.db.Delete(&model.User{}, filter).Error
 }

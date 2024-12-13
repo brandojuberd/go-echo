@@ -15,10 +15,11 @@ func UserInit(db *gorm.DB, api *echo.Group, gui *echo.Group) {
 	userHandler := handler.Init(userService)
 
 	userRoute := api.Group("/users")
-	userRoute.GET("", userHandler.FindAll)
+	userRoute.GET("", userHandler.Find)
+	userRoute.DELETE("", userHandler.Delete)
 	userRoute.POST("/seed", userHandler.Seed)
 
 	guiUserRoute := gui.Group("/users")
-	guiUserRoute.GET("", userHandler.FindAllGUI)
+	guiUserRoute.GET("", userHandler.FindGUI)
 
 }
