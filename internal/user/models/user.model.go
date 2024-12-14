@@ -1,4 +1,4 @@
-package dto
+package models
 
 type GetUserFilter struct {
 	ID       uint64 `json:"ID"`

@@ -1,27 +1,27 @@
-package handler
+package handlers
 
 import (
 	"fmt"
-	"go-echo/internal/user/dto"
-	"go-echo/internal/user/model"
-	"go-echo/internal/user/service"
+	"go-echo/internal/user/entities"
+	"go-echo/internal/user/models"
+	"go-echo/internal/user/services"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
-type UserController struct {
-	userService *service.UserService
+type userHandler struct {
+	userService *services.UserService
 }
 
-func Init(userService *service.UserService) *UserController {
+func InitUserHandler(userService *services.UserService) UserHandler {
 
-	return &UserController{userService: userService}
+	return &userHandler{userService: userService}
 
 }
 
-func (controller *UserController) CreateUser(e echo.Context) {
-	var user model.User
+func (controller *userHandler) CreateUser(e echo.Context) error {
+	var user entities.User
 	// if err := e.ShouldBindJSON(&user); err != nil {
 	// 	// c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	// 	return
@@ -32,16 +32,16 @@ func (controller *UserController) CreateUser(e echo.Context) {
 	// 	return
 	// }
 
-	response := model.User{
+	response := entities.User{
 		ID:    user.ID,
 		Email: user.Email,
 	}
 
-	e.JSON(http.StatusCreated, response)
+	return e.JSON(http.StatusCreated, response)
 }
 
-func (controller *UserController) Find(c echo.Context) error {
-	filter := new(dto.GetUserFilter)
+func (controller *userHandler) Find(c echo.Context) error {
+	filter := new(models.GetUserFilter)
 	err := c.Bind(filter)
 
 	if err != nil {
@@ -52,12 +52,12 @@ func (controller *UserController) Find(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	output := map[string]*[]model.User{"users": users}
+	output := map[string]*[]entities.User{"users": users}
 	return c.JSON(http.StatusOK, output)
 }
 
-func (controller *UserController) FindGUI(c echo.Context) error {
-	filter := new(dto.GetUserFilter)
+func (controller *userHandler) FindGUI(c echo.Context) error {
+	filter := new(models.GetUserFilter)
 	err := c.Bind(filter)
 
 	if err != nil {
@@ -68,16 +68,16 @@ func (controller *UserController) FindGUI(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(map[string]*[]model.User{"Users": users})
-	output := map[string]*[]model.User{"Users": users}
+	fmt.Println(map[string]*[]entities.User{"Users": users})
+	output := map[string]*[]entities.User{"Users": users}
 
 	err = c.Render(http.StatusOK, "users", output)
 	fmt.Println(err)
 	return err
 }
 
-func (controller *UserController) Delete(c echo.Context) error {
-	filter := new(dto.GetUserFilter)
+func (controller *userHandler) Delete(c echo.Context) error {
+	filter := new(models.GetUserFilter)
 	err := c.Bind(filter)
 
 	if err != nil {
@@ -91,7 +91,7 @@ func (controller *UserController) Delete(c echo.Context) error {
 	return c.String(http.StatusOK, "successfully ")
 }
 
-func (controller *UserController) Seed(c echo.Context) error {
+func (controller *userHandler) Seed(c echo.Context) error {
 	users, err := controller.userService.Seed()
 	if err != nil {
 		return err
