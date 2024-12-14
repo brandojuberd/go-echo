@@ -2,22 +2,16 @@ package internal
 
 import (
 	"fmt"
+	"go-echo/internal/config"
 	"go-echo/internal/database"
 	"go-echo/internal/server"
-
-	"github.com/joho/godotenv"
 )
 
 func InitInternal() {
-	err := godotenv.Load("development.env")
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
 	fmt.Println("Start go-echo Application")
 
-	db := database.InitDatabaseConnection()
+	config := config.GetConfig()
+	db := database.InitPostgresDatabase(config.Db)
 
 	echoServer := server.NewEchoServer(db)
 

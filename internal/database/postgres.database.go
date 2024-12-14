@@ -2,10 +2,9 @@ package database
 
 import (
 	"fmt"
+	"go-echo/internal/config"
 	"net/url"
-	"os"
 
-	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -18,17 +17,12 @@ var (
 	dbInstance *postgresDatabase
 )
 
-func InitDatabaseConnection() Database {
-	err := godotenv.Load("development.env")
-	if err != nil {
-		fmt.Println(err)
-	}
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	host := os.Getenv("DB_HOST")
-	port := os.Getenv("DB_PORT")
-	dbName := os.Getenv("DB_NAME")
-	fmt.Println(host, port, dbName, user, password)
+func InitPostgresDatabase(dbConfig *config.Db) Database {
+	user := dbConfig.User
+	password := dbConfig.Password
+	host := dbConfig.Host
+	port := dbConfig.Port
+	dbName := dbConfig.DBName
 
 	dsn := url.URL{
 		User:     url.UserPassword(user, password),

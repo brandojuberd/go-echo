@@ -2,7 +2,9 @@ package server
 
 import (
 	"go-echo/internal/database"
-	"go-echo/internal/user"
+	"go-echo/internal/user/handlers"
+	"go-echo/internal/user/repositories"
+	"go-echo/internal/user/services"
 	"html/template"
 	"io"
 	"net/http"
@@ -11,6 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"gorm.io/gorm"
 )
 
 type echoServer struct {
@@ -78,8 +81,22 @@ func (s *echoServer) Start() {
 		return err
 	})
 
-	user.UserInit(s.db.GetDb(), apiGroup, guiGroup)
+	InitUserHttpHandler(s.db.GetDb(), apiGroup, guiGroup)
 
 	port := os.Getenv("PORT")
 	s.app.Logger.Fatal(s.app.Start(":" + port))
+}
+
+func InitUserHttpHandler(db *gorm.DB, api *echo.Group, gui *echo.Group) {
+	userRepository := repositories.InitUserPostgresRepository(db)
+	userService := services.Init(userRepository)
+	userHandler := handlers.InitUserHandler(userService)
+
+	userRoute := api.Group("/users")
+	userRoute.GET("", userHandler.Find)
+	userRoute.DELETE("", userHandler.Delete)
+	userRoute.POST("/seed", userHandler.Seed)
+
+	guiUserRoute := gui.Group("/users")
+	guiUserRoute.GET("", userHandler.FindGUI)
 }
