@@ -13,7 +13,7 @@ type UserPostgresRepository struct {
 
 func InitUserPostgresRepository(db *gorm.DB) UserRepository {
 	return &UserPostgresRepository{db: db}
-}	
+}
 
 func (r *UserPostgresRepository) Create(user *entities.User) error {
 	return r.db.Create(user).Error
@@ -32,5 +32,10 @@ func (r *UserPostgresRepository) Find(filter *models.GetUserFilter) (*[]entities
 }
 
 func (r *UserPostgresRepository) Delete(filter *models.GetUserFilter) error {
-	return r.db.Delete(&entities.User{}, filter).Error
+	var users []entities.User
+	err := r.db.Find(&users, filter).Error
+	if err != nil {
+		return err
+	}
+	return r.db.Delete(users).Error
 }

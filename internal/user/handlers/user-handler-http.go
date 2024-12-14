@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"go-echo/internal/user/entities"
 	"go-echo/internal/user/models"
-	"go-echo/internal/user/services"
+	"go-echo/internal/user/usecases"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
 type userHandler struct {
-	userService *services.UserService
+	userService *usecases.UserUsecase
 }
 
-func InitUserHandler(userService *services.UserService) UserHandler {
+func InitUserHandler(userService *usecases.UserUsecase) UserHandler {
 
 	return &userHandler{userService: userService}
 

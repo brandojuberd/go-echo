@@ -4,7 +4,7 @@ import (
 	"go-echo/internal/database"
 	"go-echo/internal/user/handlers"
 	"go-echo/internal/user/repositories"
-	"go-echo/internal/user/services"
+	"go-echo/internal/user/usecases"
 	"html/template"
 	"io"
 	"net/http"
@@ -89,7 +89,7 @@ func (s *echoServer) Start() {
 
 func InitUserHttpHandler(db *gorm.DB, api *echo.Group, gui *echo.Group) {
 	userRepository := repositories.InitUserPostgresRepository(db)
-	userService := services.Init(userRepository)
+	userService := usecases.Init(userRepository)
 	userHandler := handlers.InitUserHandler(userService)
 
 	userRoute := api.Group("/users")
