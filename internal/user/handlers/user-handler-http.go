@@ -20,24 +20,17 @@ func InitUserHandler(userService *usecases.UserUsecase) UserHandler {
 
 }
 
-func (controller *userHandler) CreateUser(e echo.Context) error {
-	var user entities.User
-	// if err := e.ShouldBindJSON(&user); err != nil {
-	// 	// c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
-
-	// if err := h.userService.CreateUser(&user); err != nil {
-	// 	// c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	// 	return
-	// }
-
-	response := entities.User{
-		ID:    user.ID,
-		Email: user.Email,
+func (controller *userHandler) CreateUser(c echo.Context) error {
+	var user *entities.User
+	if err := c.Bind(user); err != nil {
+		c.JSON(http.StatusBadRequest, err)
 	}
 
-	return e.JSON(http.StatusCreated, response)
+	if err := controller.userService.CreateUser(user); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+	}
+
+	return c.JSON(http.StatusCreated, "register success")
 }
 
 func (controller *userHandler) Find(c echo.Context) error {
@@ -58,17 +51,15 @@ func (controller *userHandler) Find(c echo.Context) error {
 
 func (controller *userHandler) FindGUI(c echo.Context) error {
 	filter := new(models.GetUserFilter)
-	err := c.Bind(filter)
-
-	if err != nil {
-		return err
+	if err := c.Bind(filter); err != nil {
+		return EchoResponse(c, http.StatusBadRequest, err.Error())
 	}
 
 	users, err := controller.userService.Find(filter)
 	if err != nil {
-		return err
+		return EchoResponse(c, http.StatusBadRequest, err.Error())
 	}
-	fmt.Println(map[string]*[]entities.User{"Users": users})
+
 	output := map[string]*[]entities.User{"Users": users}
 
 	err = c.Render(http.StatusOK, "users", output)
@@ -78,17 +69,16 @@ func (controller *userHandler) FindGUI(c echo.Context) error {
 
 func (controller *userHandler) Delete(c echo.Context) error {
 	filter := new(models.GetUserFilter)
-	err := c.Bind(filter)
 
-	if err != nil {
-		return err
+	if err := c.Bind(filter); err != nil {
+		return EchoResponse(c, http.StatusBadRequest, err.Error())
 	}
 
-	err = controller.userService.Delete(filter)
-	if err != nil {
-		return err
+	if err := controller.userService.Delete(filter); err != nil {
+		return EchoResponse(c, http.StatusBadRequest, err.Error())
 	}
-	return c.String(http.StatusOK, "successfully ")
+
+	return c.String(http.StatusOK, "delete success")
 }
 
 func (controller *userHandler) Seed(c echo.Context) error {

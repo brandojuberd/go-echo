@@ -44,7 +44,7 @@ func (s *UserUsecase) Seed() (*[]entities.User, error) {
 			Email:    fmt.Sprint(i) + "@example.com",
 			Username: "User No. " + fmt.Sprint(i),
 			Age:      18,
-			Password: "Not Hashed Password",
+			Password: "Test4",
 		}
 		err := s.CreateUser(&user)
 		if err != nil {

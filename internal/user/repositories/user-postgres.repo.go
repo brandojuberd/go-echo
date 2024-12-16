@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"go-echo/internal/user/entities"
 	"go-echo/internal/user/models"
 
@@ -36,6 +37,9 @@ func (r *UserPostgresRepository) Delete(filter *models.GetUserFilter) error {
 	err := r.db.Find(&users, filter).Error
 	if err != nil {
 		return err
+	}
+	if len(users) == 0 {
+		return errors.New("data not found")
 	}
 	return r.db.Delete(users).Error
 }
