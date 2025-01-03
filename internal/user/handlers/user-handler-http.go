@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"go-echo/internal/shared/customvalidator"
 	"go-echo/internal/user/entities"
 	"go-echo/internal/user/models"
 	"go-echo/internal/user/usecases"
@@ -12,12 +13,11 @@ import (
 
 type userHandler struct {
 	userService *usecases.UserUsecase
+	cv          *customvalidator.CustomValidator
 }
 
-func InitUserHandler(userService *usecases.UserUsecase) UserHandler {
-
-	return &userHandler{userService: userService}
-
+func InitUserHandler(userService *usecases.UserUsecase, cv *customvalidator.CustomValidator) UserHandler {
+	return &userHandler{userService: userService, cv: cv}
 }
 
 func (controller *userHandler) CreateUser(c echo.Context) error {
@@ -31,6 +31,28 @@ func (controller *userHandler) CreateUser(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, "register success")
+}
+
+func (controller *userHandler) Login(c echo.Context) error {
+
+	data := &models.UserLogin{}
+	err := c.Bind(data)
+	if err != nil {
+		return EchoResponse(c, http.StatusBadRequest, err.Error())
+	}
+
+	validate := controller.cv.Validate(data)
+
+	if len(validate) > 0 {
+		return EchoResponse(c, http.StatusBadRequest, controller.cv.HumanizeMessage(validate))
+	}
+
+	_, err = controller.userService.Login(data)
+	if err != nil {
+		return EchoResponse(c, http.StatusBadRequest, err.Error())
+	}
+
+	return EchoResponse(c, http.StatusOK, "ok")
 }
 
 func (controller *userHandler) Find(c echo.Context) error {

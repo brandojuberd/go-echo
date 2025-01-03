@@ -9,5 +9,6 @@ type UserRepository interface {
 	Create(user *entities.User) error
 	FindById(id uint) (*entities.User, error)
 	Find(filter *models.GetUserFilter) (*[]entities.User, error)
+	FindOne(filter *models.GetUserFilter) (*entities.User, error)
 	Delete(filter *models.GetUserFilter) error
 }

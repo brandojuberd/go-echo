@@ -32,6 +32,12 @@ func (r *UserPostgresRepository) Find(filter *models.GetUserFilter) (*[]entities
 	return &users, err
 }
 
+func (r *UserPostgresRepository) FindOne(filter *models.GetUserFilter) (*entities.User, error) {
+	var user entities.User
+	err := r.db.First(&user, filter).Error
+	return &user, err
+}
+
 func (r *UserPostgresRepository) Delete(filter *models.GetUserFilter) error {
 	var users []entities.User
 	err := r.db.Find(&users, filter).Error

@@ -1,7 +1,9 @@
 package server
 
 import (
+	"context"
 	"go-echo/internal/database"
+	"go-echo/internal/shared/customvalidator"
 	"go-echo/internal/user/handlers"
 	"go-echo/internal/user/repositories"
 	"go-echo/internal/user/usecases"
@@ -9,16 +11,18 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/signal"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
-	"gorm.io/gorm"
 )
 
 type echoServer struct {
 	app *echo.Echo
 	db  database.Database
+	cv  *customvalidator.CustomValidator
 }
 
 // TemplateRenderer is a custom html/template renderer for Echo framework
@@ -44,10 +48,12 @@ func NewEchoServer(db database.Database) Server {
 	}
 	echoApp.Renderer = renderer
 	echoApp.Logger.SetLevel(log.DEBUG)
+	cvalidator := customvalidator.NewCustomValidator()
 
 	return &echoServer{
 		app: echoApp,
 		db:  db,
+		cv:  cvalidator,
 	}
 }
 
@@ -57,6 +63,7 @@ func (s *echoServer) Start() {
 	s.app.Use(middleware.Logger())
 
 	// Create a group with the prefix "/api"
+
 	apiGroup := s.app.Group("/api")
 	guiGroup := s.app.Group("/gui")
 
@@ -81,16 +88,41 @@ func (s *echoServer) Start() {
 		return err
 	})
 
-	InitUserHttpHandler(s.db.GetDb(), apiGroup, guiGroup)
+	InitUserHttpHandler(s, apiGroup, guiGroup)
 
 	port := os.Getenv("PORT")
-	s.app.Logger.Fatal(s.app.Start(":" + port))
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+	// Start server
+	go func() {
+		if err := s.app.Start(":" + port); err != nil && err != http.ErrServerClosed {
+			s.app.Logger.Fatal(err.Error(), " shutting down the server")
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
+	<-ctx.Done()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := s.app.Shutdown(ctx); err != nil {
+		s.app.Logger.Fatal(err)
+	}
 }
 
-func InitUserHttpHandler(db *gorm.DB, api *echo.Group, gui *echo.Group) {
-	userRepository := repositories.InitUserPostgresRepository(db)
+func (s *echoServer) GetValidator() *customvalidator.CustomValidator {
+	return s.cv
+}
+
+func (s *echoServer) GetDatabase() database.Database {
+	return s.db
+}
+
+func InitUserHttpHandler(s Server, api *echo.Group, gui *echo.Group) {
+	userRepository := repositories.InitUserPostgresRepository(s.GetDatabase().GetDb())
 	userService := usecases.Init(userRepository)
-	userHandler := handlers.InitUserHandler(userService)
+	userHandler := handlers.InitUserHandler(userService, s.GetValidator())
+
+	api.POST("/login", userHandler.Login)
 
 	userRoute := api.Group("/users")
 	userRoute.GET("", userHandler.Find)

@@ -16,3 +16,11 @@ docker exec -i -t go-echo-dev bash
 ```
 air
 ```
+4.1. Build manually
+```
+go build  -o ./tmp/main -buildvcs=false cmd/go-echo/main.go
+```
+4.2. Run manually
+```
+go run cmd/go-echo/main.go
+```

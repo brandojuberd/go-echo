@@ -26,13 +26,21 @@ func (s *UserUsecase) CreateUser(user *entities.User) error {
 	return s.repo.Create(user)
 }
 
+func (s *UserUsecase) Login(loginInformation *models.UserLogin) (*entities.User, error) {
+	user, err := s.repo.FindOne(&models.GetUserFilter{Email: loginInformation.Email})
+	
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
 func (s *UserUsecase) Find(filter *models.GetUserFilter) (*[]entities.User, error) {
 	return s.repo.Find(filter)
 }
 
 func (s *UserUsecase) Delete(filter *models.GetUserFilter) error {
 	err := s.repo.Delete(filter)
-	fmt.Println("Error: ", err)
 	return err
 }
 
