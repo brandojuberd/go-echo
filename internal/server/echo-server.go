@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"go-echo/internal/config"
 	"go-echo/internal/database"
 	"go-echo/internal/shared/customvalidator"
 	"go-echo/internal/user/handlers"
@@ -14,6 +15,8 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -23,6 +26,7 @@ type echoServer struct {
 	app *echo.Echo
 	db  database.Database
 	cv  *customvalidator.CustomValidator
+	config config.Server
 }
 
 // TemplateRenderer is a custom html/template renderer for Echo framework
@@ -41,12 +45,19 @@ func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c 
 	return t.templates.ExecuteTemplate(w, name, data)
 }
 
-func NewEchoServer(db database.Database) Server {
+func NewEchoServer(db database.Database, serverConfig config.Server) Server {
 	echoApp := echo.New()
 	renderer := &TemplateRenderer{
 		templates: template.Must(template.ParseGlob("web/*.html")),
 	}
 	echoApp.Renderer = renderer
+	jwtConfig := echojwt.Config{
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return new(jwtCustomClaims)
+		},
+		SigningKey: []byte(serverConfig.JwtSecret),
+	}
+	echoApp.Use(echojwt.WithConfig(jwtConfig))
 	echoApp.Logger.SetLevel(log.DEBUG)
 	cvalidator := customvalidator.NewCustomValidator()
 
@@ -54,8 +65,16 @@ func NewEchoServer(db database.Database) Server {
 		app: echoApp,
 		db:  db,
 		cv:  cvalidator,
+		config: serverConfig,
 	}
 }
+
+type jwtCustomClaims struct {
+	Name  string `json:"name"`
+	Admin bool   `json:"admin"`
+	jwt.RegisteredClaims
+}
+
 
 func (s *echoServer) Start() {
 
@@ -90,12 +109,11 @@ func (s *echoServer) Start() {
 
 	InitUserHttpHandler(s, apiGroup, guiGroup)
 
-	port := os.Getenv("PORT")
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 	// Start server
 	go func() {
-		if err := s.app.Start(":" + port); err != nil && err != http.ErrServerClosed {
+		if err := s.app.Start(":" + s.config.Port); err != nil && err != http.ErrServerClosed {
 			s.app.Logger.Fatal(err.Error(), " shutting down the server")
 		}
 	}()

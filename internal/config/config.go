@@ -10,6 +10,7 @@ import (
 type (
 	Server struct {
 		Port string
+		JwtSecret string
 	}
 
 	Db struct {
@@ -41,6 +42,10 @@ func GetConfig() *Config {
 	dbPort := os.Getenv("DB_PORT")
 	dbName := os.Getenv("DB_NAME")
 	serverPort := os.Getenv("PORT")
+	serverJwtSecret := os.Getenv("JWT_SECRET")
+	if serverJwtSecret == "" {
+		serverJwtSecret = "secret"
+	}
 
 	config := &Config{
 		Db: &Db{
@@ -52,6 +57,7 @@ func GetConfig() *Config {
 		},
 		Server: &Server{
 			Port: serverPort,
+			JwtSecret: serverJwtSecret,
 		},
 	}
 	return config

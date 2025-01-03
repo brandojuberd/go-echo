@@ -13,8 +13,7 @@ func InitInternal() {
 	config := config.GetConfig()
 	db := database.InitPostgresDatabase(config.Db)
 
-	echoServer := server.NewEchoServer(db)
+	echoServer := server.NewEchoServer(db, *config.Server)
 
 	echoServer.Start()
-
 }
